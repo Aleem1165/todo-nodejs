@@ -1,38 +1,68 @@
-.App {
-  text-align: center;
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family:cursive;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.todoDiv{
+  background-color: white;
+  width: 30%;
+  height: 60%;
+  /* overflow: hidden; */
+  overflow-y: scroll; 
+  border-radius: 10px;
+  padding-left: 10px;
+  padding-right: 8px;
+  /* padding: 0px 10px; */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  
+  box-shadow: rgba(255, 255, 255, 0.19) 0px 10px 20px, rgba(238, 238, 238, 0.23) 0px 6px 6px;
+
+  background: #E0EAFC;  /* fallback for old browsers */
+background: -webkit-linear-gradient(to right, #CFDEF3, #E0EAFC);  /* Chrome 10-25, Safari 5.1-6 */
+background: linear-gradient(to right, #CFDEF3, #E0EAFC); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+position: relative;
 }
 
-.App-link {
-  color: #61dafb;
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+/* ::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px rgb(126, 33, 33); 
+  border-radius: 13px;
+ 
+} */
+::-webkit-scrollbar-thumb {
+  background: #21282b; 
+  border-radius: 10px;
+  margin-right: 20px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+
+.inputDiv{
+  /* background-color: #50a3c7; */
+  position: sticky;
+  top: 0px;
+  width: 100%;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  background: #E0EAFC;  
+background: -webkit-linear-gradient(to right, #CFDEF3, #E0EAFC); 
+background: linear-gradient(to right, #CFDEF3, #E0EAFC);
+padding-left: 10px;
+padding-right: 10px;
+padding-bottom: 10px;
+
+}
+.inputDiv input{
+  width: 100%;
 }

@@ -1,8 +1,17 @@
-import logo from "./logo.svg";
 import "./App.css";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { RotatingLines } from "react-loader-spinner";
+import { TextField } from "@mui/material";
+import Button from "@mui/material/Button";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import UpdateIcon from "@mui/icons-material/Update";
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import FiberManualRecordOutlinedIcon from "@mui/icons-material/FiberManualRecordOutlined";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import Swal from "sweetalert2";
 
 function App() {
   const backendURL = "http://localhost:5000/apis/";
@@ -11,62 +20,113 @@ function App() {
   const [todoData, setTodoData] = useState("");
   const [loader, setLoader] = useState(false);
   const [showUpdateBtn, setShowUpdateBtn] = useState(false);
-  const [updateValueIndex, setUpdateValueIndex] = useState("");
+  const [updateId, setUpdateId] = useState("");
+  const [handleRefresh, setHandleRefresh] = useState(false);
+
   useEffect(() => {
     (async () => {
-      setLoader(true);
-      const { data } = await axios.get(backendURL + "todo/read");
-      console.log(data.data);
-      setTodoData(data.data);
-      setLoader(false);
+      try {
+        setLoader(true);
+        const { data } = await axios.get(backendURL + "todo/read");
+        console.log(data);
+        setLoader(false);
+
+        if (data.data.length > 0) {
+          setTodoData(data.data);
+        } else {
+          setTodoData("");
+        }
+      } catch (error) {
+        console.log("error=====>", error);
+        alert(error.message);
+      }
     })();
-  }, []);
+  }, [handleRefresh]);
 
   const handleAdd = async () => {
+    setLoader(true);
     const { data } = await axios.post(backendURL + "todo/create", {
       inputData: text,
       text,
+      check: false,
     });
-    setTodoData(data.data);
     setText("");
+
+    setHandleRefresh(!handleRefresh);
   };
 
-  const handleDelete = async (index) => {
+  const handleDelete = async (index, item) => {
+    setLoader(true);
     const { data } = await axios.delete(backendURL + "todo/delete", {
       data: {
-        index,
+        _id: item._id,
       },
     });
-    setTodoData(data.data);
-    setText("");
+    setHandleRefresh(!handleRefresh);
   };
 
-  const handleUpdate = async (item, index) => {
-    // console.log(item.text);
+  const handleEdit = async (item, index) => {
     setText(item.text);
-    setUpdateValueIndex(index);
+    setUpdateId(item._id);
     setShowUpdateBtn(true);
   };
 
-  const handleFinalUpdate = async () => {
-    console.log(text, updateValueIndex);
+  const handleEditCheck = async (item) => {
+    if (item.check == true) {
+      const { data } = await axios.put(backendURL + "todo/updateCheck", {
+        _id: item._id,
+        check: false,
+      });
+      setHandleRefresh(!handleRefresh);
+    } else {
+      const { data } = await axios.put(backendURL + "todo/updateCheck", {
+        _id: item._id,
+        check: true,
+      });
+      setHandleRefresh(!handleRefresh);
+    }
+  };
+
+  const handleUpdate = async () => {
+    console.log(updateId);
     const { data } = await axios.put(backendURL + "todo/update", {
+      _id: updateId,
       text,
-      updateValueIndex,
     });
-    setUpdateValueIndex("");
     setShowUpdateBtn(false);
     setText("");
-    setTodoData(data.data);
+    setHandleRefresh(!handleRefresh);
   };
 
   const handleCancle = () => {
-    setShowUpdateBtn(false)
-    setText("")
-  }
+    setShowUpdateBtn(false);
+    setText("");
+  };
 
   return (
-    <div>
+    <div
+      style={{
+        width: "100%",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#0F2027",
+        background:
+          "-webkit-linear-gradient(to right, #2C5364, #203A43, #0F2027)",
+        background: "linear-gradient(to right, #2C5364, #203A43, #0F2027)",
+      }}
+    >
+      <h1
+        style={{
+          color: "whitesmoke",
+          fontSize: 40,
+          fontWeight: "bolder",
+        }}
+      >
+        Todo..!
+      </h1>
       {loader ? (
         <RotatingLines
           strokeColor="grey"
@@ -76,66 +136,157 @@ function App() {
           visible={true}
         />
       ) : (
-        <div>
+        <div className="todoDiv">
+          <div className="inputDiv">
+            <TextField
+              label="Add todo!"
+              variant="standard"
+              fullWidth
+              onChange={(event) => {
+                setText(event.target.value);
+              }}
+              sx={{ m: 1 }}
+              autoComplete={"off"}
+              value={text}
+            />
+            {showUpdateBtn ? (
+              <div>
+                <Button
+                  variant="outlined"
+                  startIcon={<UpdateIcon />}
+                  disabled={text ? false : true}
+                  onClick={handleUpdate}
+                >
+                  update
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<HighlightOffIcon />}
+                  onClick={handleCancle}
+                >
+                  cancle
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outlined"
+                startIcon={<AddCircleOutlineIcon />}
+                disabled={text ? false : true}
+                onClick={handleAdd}
+              >
+                add
+              </Button>
+            )}
+          </div>
           {todoData ? (
             <div
               style={{
-                // backgroundColor:"red",
-                height: "100vh",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                width: "100%",
               }}
             >
-              <input
-                type={"text"}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-              />
-              {showUpdateBtn ? (
-                <div>
-                  <button onClick={handleFinalUpdate}>Update</button>
-                  <button
-                  onClick={handleCancle}
-                  >cancle</button>
-                </div>
-              ) : (
-                <button onClick={handleAdd}>add</button>
-              )}
-              <div>
-                {todoData.map((item, index) => {
-                  return (
+              {todoData.map((item, index) => {
+                return (
+                  <div
+                    key={index}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "flex-start",
+                      backgroundColor: "#2C5364",
+                      borderRadius: 5,
+                      marginTop: 10,
+                      height: 35,
+                      padding: "0px 10px",
+                    }}
+                  >
+                    {item.check ? (
+                      <FiberManualRecordIcon
+                        style={{
+                          cursor: "pointer",
+                        }}
+                        onClick={() => handleEditCheck(item)}
+                        fontSize="small"
+                      />
+                    ) : (
+                      <FiberManualRecordOutlinedIcon
+                        style={{
+                          cursor: "pointer",
+                        }}
+                        onClick={() => handleEditCheck(item)}
+                        fontSize="small"
+                      />
+                    )}
+                    <p
+                      style={
+                        item.check
+                          ? {
+                              paddingLeft: 5,
+                              color: "red",
+                              textDecorationLine: "line-through",
+                            }
+                          : {
+                              paddingLeft: 5,
+                              color: "white",
+                            }
+                      }
+                    >
+                      {item.text}
+                    </p>
                     <div
-                      key={index}
                       style={{
+                        width: "100%",
                         display: "flex",
-                        flexDirection: "row",
                         alignItems: "center",
+                        justifyContent: "right",
                       }}
                     >
-                      <p
-                      // onClick={() => handleDelete(index)}
-                      >
-                        {item.text}
-                      </p>
-
                       {showUpdateBtn !== true && (
                         <div>
-                          <button onClick={() => handleDelete(index)}>
-                            delete
-                          </button>
-                          <button onClick={() => handleUpdate(item, index)}>
-                            update
-                          </button>
+                          <EditRoundedIcon
+                            onClick={() => handleEdit(item, index)}
+                            style={{
+                              cursor: "pointer",
+                            }}
+                            sx={{ "&:hover": { color: "white" } }}
+                            // color={"primary"}
+                          />
+                          <DeleteRoundedIcon
+                            onClick={() =>
+                              Swal.fire({
+                                title: "Are you sure?",
+                                text: "You won't be able to revert this!",
+                                icon: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#3085d6",
+                                cancelButtonColor: "#d33",
+                                confirmButtonText: "Yes, delete it!",
+                              }).then((result) => {
+                                if (result.isConfirmed) {
+                                  handleDelete(index, item);
+                                  Swal.fire(
+                                    "Deleted!",
+                                    "Your file has been deleted.",
+                                    "success"
+                                  );
+                                }
+                              })
+                            }
+                            sx={{ "&:hover": { color: "white" } }}
+                            style={{
+                              cursor: "pointer",
+                            }}
+                          />
                         </div>
                       )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
+              {/* </div> */}
             </div>
           ) : (
-            <div>nh hai data</div>
+            <div>Nothing to do!</div>
           )}
         </div>
       )}
